@@ -28,12 +28,12 @@ export const dictionaries = {
     },
     section: {
       featured: "Featured Works",
-      featured_desc: "Selected projects demonstrating full-stack capabilities and complex system architecture.",
+      featured_desc: "Selected projects showcasing full-stack development and scalable system architecture.",
       ongoing: "Ongoing Maintenance & Enhancement",
       notable: "Full Ownership Projects",
       additional: "Additional Contributions",
       contact_title: "Let's Build Something Amazing Together.",
-      contact_desc: "Looking for a Full Stack developer specializing in Martech and high-performance web solutions? I'm ready to join your team.",
+      contact_desc: "If you're looking for a Full Stack Developer with strong expertise in Martech and high-performance web systems, I'm ready to contribute.",
       email_me: "Drop me an email",
       call_me: "Call Me"
     },
