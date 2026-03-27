@@ -1,10 +1,7 @@
 "use client";
 import Link from 'next/link';
-import { useLanguage } from '@/context/LanguageContext';
 
 export default function Navbar() {
-  const { lang, toggleLanguage } = useLanguage();
-
   return (
     <nav className="fixed w-full z-50 bg-black/50 backdrop-blur-lg border-b border-white/10">
       <div className="container mx-auto px-6 h-16 flex items-center justify-between">
@@ -12,19 +9,11 @@ export default function Navbar() {
           Kitsakorn
         </Link>
         <div className="flex items-center gap-6">
-          {/* <button 
-                onClick={toggleLanguage}
-                className="px-3 py-1.5 rounded-lg border border-white/10 text-xs font-bold bg-white/5 hover:bg-white/10 transition-colors"
-            >
-                {lang === 'en' ? 'TH' : 'EN'}
-            </button> */}
-          {<a
+          <a
             href="#contact"
             className="px-3 py-1.5 rounded-lg border border-white/10 text-xs font-bold bg-white/5 hover:bg-white/10 transition-colors">
             Contact
-
           </a>
-          }
         </div>
       </div>
     </nav>

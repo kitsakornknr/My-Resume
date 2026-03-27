@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Manrope, Noto_Sans_Thai } from "next/font/google"; 
 import "./globals.css";
-import { LanguageProvider } from "@/context/LanguageContext";
+import { ResumeProvider } from "@/context/ResumeContext"; 
 
 const manrope = Manrope({ subsets: ["latin"] });
 const notoThai = Noto_Sans_Thai({ subsets: ["thai"] });
@@ -24,9 +24,10 @@ export default function RootLayout({
           fontFamily: `${manrope.style.fontFamily}, ${notoThai.style.fontFamily}, sans-serif` 
         }}
       >
-        <LanguageProvider>
+        {}
+        <ResumeProvider>
           {children}
-        </LanguageProvider>
+        </ResumeProvider>
       </body>
     </html>
   );

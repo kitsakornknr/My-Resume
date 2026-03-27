@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { ResumeService } from '../services/resumeService';
+import { ResumeService } from '../../services/resumeService';
 
 interface ExperienceItem {
   id: number;
