@@ -16,7 +16,6 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "placeholder";
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// --- Helper Components ---
 const FormInput = ({ label, value, onChange, placeholder, icon: Icon, disabled }: any) => (
     <div className="flex flex-col gap-2 mb-4">
         <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
@@ -76,12 +75,10 @@ export default function AdminEditor({ initialData }: { initialData: any }) {
     const [skills, setSkills] = useState(initialData?.skills || []);
     const [projects, setProjects] = useState(initialData?.projects || []);
 
-    // UI States
     const [isSaving, setIsSaving] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
 
-    // --- EDIT STATE ---
     const [editingSkillId, setEditingSkillId] = useState<string | null>(null);
     const [editingProjectId, setEditingProjectId] = useState<string | null>(null); // null = Create Mode
 
@@ -101,7 +98,6 @@ export default function AdminEditor({ initialData }: { initialData: any }) {
         if (initialData?.projects) setProjects(initialData.projects);
     }, [initialData]);
 
-    // --- Helpers ---
     const convertToWebP = (file: File): Promise<Blob> => {
         return new Promise((resolve, reject) => {
             const img = document.createElement('img');
@@ -136,7 +132,6 @@ export default function AdminEditor({ initialData }: { initialData: any }) {
     };
     const handleRemoveImage = () => setNewProject(prev => ({ ...prev, image: '' }));
 
-    // --- CRUD ---
     const handleProfileUpdate = async (e: React.FormEvent) => {
         e.preventDefault(); setIsSaving(true);
         try { await updateProfile(profile); router.refresh(); alert('Saved!'); } catch (err) { alert('Error'); } finally { setIsSaving(false); }
@@ -154,7 +149,6 @@ export default function AdminEditor({ initialData }: { initialData: any }) {
     const handleCancelEditSkill = () => { setNewSkill({ ...newSkill, name: '' }); setEditingSkillId(null); };
     const handleDeleteSkill = async (id: string) => { if (confirm('Delete?')) { setIsSaving(true); await deleteSkill(id); router.refresh(); setIsSaving(false); } };
 
-    // --- PROJECT LOGIC ---
     const handleCreateNewProjectClick = () => {
         setNewProject({ title: '', description: '', link: '', image: '', category: 'Flagship Projects', tags: '', label: '' });
         setEditingProjectId(null);
@@ -174,8 +168,7 @@ export default function AdminEditor({ initialData }: { initialData: any }) {
             if (editingProjectId) { await updateProject({ ...newProject, id: editingProjectId }); }
             else {
                 const newP = await addProject(newProject);
-                // @ts-ignore
-                if (newP && newP.id) setEditingProjectId(newP.id); // Auto select after create
+                if (newP && newP.id) setEditingProjectId(newP.id);
             }
             router.refresh();
         } catch (error) { console.error(error); } finally { setIsSaving(false); }
@@ -192,7 +185,6 @@ export default function AdminEditor({ initialData }: { initialData: any }) {
         }
     };
 
-    // --- Grouping Logic ---
     const projectGroups = [
         { id: 'flagship', label: 'Flagship', color: 'text-blue-400', filter: (p: any) => p.category.includes('Flagship') },
         { id: 'ownership', label: 'Full Ownership', color: 'text-purple-400', filter: (p: any) => (p.category.includes('Ownership') || p.category.includes('Internal')) && !p.category.includes('Flagship') },
@@ -255,8 +247,8 @@ export default function AdminEditor({ initialData }: { initialData: any }) {
 
                             <div className="flex-1 overflow-y-auto p-2 space-y-6">
                                 {projectGroups.map((group) => {
-                                    const groupProjects = projects.filter(p =>
-                                        group.filter(p) && p.title.toLowerCase().includes(searchTerm.toLowerCase())
+                                    const groupProjects = projects.filter((p: any) => 
+                                    group.filter((gp: any) => gp.id === p.id)
                                     );
                                     if (groupProjects.length === 0) return null;
 
@@ -344,7 +336,6 @@ export default function AdminEditor({ initialData }: { initialData: any }) {
                         </div>
                     </div>
                 ) : (
-                    // --- NORMAL LAYOUT FOR PROFILE & SKILLS ---
                     <div className="p-8 h-full overflow-y-auto">
                         <header className="flex justify-between items-center mb-8">
                             <div><h2 className="text-2xl font-bold flex items-center gap-3">{menuItems.find(m => m.id === activeTab)?.label}</h2></div>
