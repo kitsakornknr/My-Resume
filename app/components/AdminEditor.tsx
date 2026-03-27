@@ -167,7 +167,7 @@ export default function AdminEditor({ initialData }: { initialData: any }) {
         try {
             if (editingProjectId) { await updateProject({ ...newProject, id: editingProjectId }); }
             else {
-                const newP: any = await addProject(newProject); 
+                const newP: any = await addProject(newProject);
                 if (newP && newP.id) setEditingProjectId(newP.id);
             }
             router.refresh();
@@ -186,15 +186,33 @@ export default function AdminEditor({ initialData }: { initialData: any }) {
     };
 
     const projectGroups = [
-        { id: 'flagship', label: 'Flagship', color: 'text-blue-400', filter: (p: any) => p.category.includes('Flagship') },
-        { id: 'ownership', label: 'Full Ownership', color: 'text-purple-400', filter: (p: any) => (p.category.includes('Ownership') || p.category.includes('Internal')) && !p.category.includes('Flagship') },
-        { id: 'landing', label: 'Landing Pages', color: 'text-orange-400', filter: (p: any) => p.category.includes('Landing Page') },
         {
-            id: 'maintenance', label: 'Maintenance', color: 'text-green-400', filter: (p: any) =>
-                !p.category.includes('Flagship') &&
-                !p.category.includes('Ownership') &&
-                !p.category.includes('Internal') &&
-                !p.category.includes('Landing Page')
+            id: 'flagship',
+            label: 'Flagship',
+            color: 'text-blue-400',
+            filter: (p: any) => p?.category?.includes('Flagship')
+        },
+        {
+            id: 'ownership',
+            label: 'Full Ownership',
+            color: 'text-purple-400',
+            filter: (p: any) => (p?.category?.includes('Ownership') || p?.category?.includes('Internal')) && !p?.category?.includes('Flagship')
+        },
+        {
+            id: 'landing',
+            label: 'Landing Pages',
+            color: 'text-orange-400',
+            filter: (p: any) => p?.category?.includes('Landing Page')
+        },
+        {
+            id: 'maintenance',
+            label: 'Maintenance',
+            color: 'text-green-400',
+            filter: (p: any) =>
+                !p?.category?.includes('Flagship') &&
+                !p?.category?.includes('Ownership') &&
+                !p?.category?.includes('Internal') &&
+                !p?.category?.includes('Landing Page')
         }
     ];
 
@@ -247,8 +265,8 @@ export default function AdminEditor({ initialData }: { initialData: any }) {
 
                             <div className="flex-1 overflow-y-auto p-2 space-y-6">
                                 {projectGroups.map((group) => {
-                                    const groupProjects = projects.filter((p: any) => 
-                                    group.filter((gp: any) => gp.id === p.id)
+                                    const groupProjects = projects.filter((p: any) =>
+                                        group.filter((gp: any) => gp.id === p.id)
                                     );
                                     if (groupProjects.length === 0) return null;
 

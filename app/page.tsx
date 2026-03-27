@@ -8,6 +8,8 @@ import Footer from "./components/Footer";
 import Link from "next/link";
 import { Lock } from "lucide-react";
 
+export const dynamic = 'force-dynamic';
+
 export default async function Home() {
   const data = await getResumeData();
 
