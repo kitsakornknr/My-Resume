@@ -167,7 +167,7 @@ export default function AdminEditor({ initialData }: { initialData: any }) {
         try {
             if (editingProjectId) { await updateProject({ ...newProject, id: editingProjectId }); }
             else {
-                const newP = await addProject(newProject);
+                const newP: any = await addProject(newProject); 
                 if (newP && newP.id) setEditingProjectId(newP.id);
             }
             router.refresh();
@@ -228,7 +228,7 @@ export default function AdminEditor({ initialData }: { initialData: any }) {
 
                 {activeTab === 'projects' ? (
                     <div className="flex w-full h-full">
-                        {/* LEFT COLUMN: Project List */}
+                        {/* LEFT COLUMN*/}
                         <div className="w-[350px] bg-[#0c0c0c] border-r border-white/10 flex flex-col h-full">
                             <div className="p-4 border-b border-white/10">
                                 <button onClick={handleCreateNewProjectClick} className="w-full bg-blue-600 hover:bg-blue-500 text-white py-2.5 rounded-lg font-bold flex items-center justify-center gap-2 transition mb-4 shadow-lg shadow-blue-900/20">
@@ -258,7 +258,7 @@ export default function AdminEditor({ initialData }: { initialData: any }) {
                                                 {group.label} <span className="bg-white/10 text-gray-400 px-1.5 rounded text-[9px]">{groupProjects.length}</span>
                                             </h3>
                                             <div className="space-y-1">
-                                                {groupProjects.map(p => (
+                                                {groupProjects.map((p: any) => (
                                                     <button
                                                         key={p.id}
                                                         onClick={() => handleProjectSelect(p)}
@@ -281,7 +281,7 @@ export default function AdminEditor({ initialData }: { initialData: any }) {
                             </div>
                         </div>
 
-                        {/* RIGHT COLUMN: Edit Form */}
+                        {/* RIGHT COLUMN*/}
                         <div className="flex-1 flex flex-col bg-[#050505] h-full overflow-hidden">
                             <div className="h-16 border-b border-white/10 flex items-center justify-between px-8 bg-[#0a0a0a]/50 backdrop-blur-sm shrink-0">
                                 <div className="flex items-center gap-3">

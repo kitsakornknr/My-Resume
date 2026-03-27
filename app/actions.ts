@@ -8,7 +8,6 @@ import { redirect } from 'next/navigation';
 export async function getResumeData() {
   const profile = await prisma.profile.findFirst();
   const skills = await prisma.skill.findMany();
-  // เรียงลำดับ Project จากใหม่ไปเก่า (createdAt desc) หรือตามต้องการ
   const projects = await prisma.project.findMany({
     orderBy: { createdAt: 'desc' } 
   });
@@ -88,20 +87,20 @@ export async function addProject(projectData: any) {
   const tagsArray = projectData.tags 
     ? (typeof projectData.tags === 'string' ? projectData.tags.split(',') : projectData.tags).map((t: string) => t.trim()).filter((t: string) => t !== '')
     : [];
-
-  await prisma.project.create({
+  const newProject = await prisma.project.create({
     data: {
       title: projectData.title,
       description: projectData.description,
       link: projectData.link,
-      image: projectData.image, // <--- เพิ่มบรรทัดนี้ ไม่งั้นสร้างใหม่รูปไม่มา
+      image: projectData.image,
       category: projectData.category,
       label: projectData.label || '',
       tags: tagsArray,
     },
   });
+
   revalidatePath('/');
-  return { success: true };
+  return { success: true, id: newProject.id }; 
 }
 
 export async function updateProject(data: any) {
@@ -111,9 +110,8 @@ export async function updateProject(data: any) {
       title: data.title,
       description: data.description,
       link: data.link,
-      image: data.image, // <--- ตรงนี้จะหายแดงหลังจากรัน npx prisma generate
+      image: data.image,
       category: data.category,
-      // เช็ค type tags ให้ชัวร์ก่อน split
       tags: typeof data.tags === 'string' ? data.tags.split(',').map((t: string) => t.trim()) : data.tags,
       label: data.label,
     },
