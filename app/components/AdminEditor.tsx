@@ -209,6 +209,7 @@ export default function AdminEditor({ initialData }: { initialData: any }) {
             label: 'Maintenance',
             color: 'text-green-400',
             filter: (p: any) =>
+                p?.category &&
                 !p?.category?.includes('Flagship') &&
                 !p?.category?.includes('Ownership') &&
                 !p?.category?.includes('Internal') &&
@@ -265,36 +266,46 @@ export default function AdminEditor({ initialData }: { initialData: any }) {
 
                             <div className="flex-1 overflow-y-auto p-2 space-y-6">
                                 {projectGroups.map((group) => {
-                                    const groupProjects = projects.filter((p: any) =>
-                                        group.filter((gp: any) => gp.id === p.id)
+                                    const groupProjects = projects.filter((p: any) => group.filter(p));
+
+                                    const filteredProjects = groupProjects.filter((p: any) =>
+                                        p.title.toLowerCase().includes(searchTerm.toLowerCase())
                                     );
-                                    if (groupProjects.length === 0) return null;
+
+                                    if (filteredProjects.length === 0) return null;
 
                                     return (
                                         <div key={group.id}>
                                             <h3 className={`text-[10px] font-bold ${group.color} uppercase tracking-wider px-3 mb-2 flex items-center gap-2`}>
-                                                {group.label} <span className="bg-white/10 text-gray-400 px-1.5 rounded text-[9px]">{groupProjects.length}</span>
+                                                {group.label} <span className="bg-white/10 text-gray-400 px-1.5 rounded text-[9px]">{filteredProjects.length}</span>
                                             </h3>
                                             <div className="space-y-1">
-                                                {groupProjects.map((p: any) => (
+                                                {filteredProjects.map((p: any) => (
                                                     <button
                                                         key={p.id}
                                                         onClick={() => handleProjectSelect(p)}
                                                         className={`w-full text-left p-3 rounded-lg border transition-all flex items-center gap-3 group ${editingProjectId === p.id ? 'bg-blue-600/10 border-blue-600/30' : 'bg-[#121212] border-transparent hover:bg-[#1a1a1a] hover:border-white/5'}`}
                                                     >
-                                                        <div className="w-10 h-10 bg-black rounded overflow-hidden shrink-0 border border-white/10">
-                                                            {p.image ? <img src={p.image} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-gray-700"><ImageIcon size={14} /></div>}
+                                                        <img
+                                                            src={p.image || '/placeholder.png'}
+                                                            className="w-10 h-10 rounded-md object-cover"
+                                                        />
+                                                        <div className="flex flex-col w-full">
+                                                            <span className="text-sm font-semibold text-white truncate">
+                                                                {p.title}
+                                                            </span>
+                                                            {p.category && (
+                                                                <span className="text-[10px] text-gray-500 truncate">
+                                                                    {p.category}
+                                                                </span>
+                                                            )}
                                                         </div>
-                                                        <div className="flex-1 min-w-0">
-                                                            <div className={`text-sm font-bold truncate ${editingProjectId === p.id ? 'text-blue-400' : 'text-gray-300 group-hover:text-white'}`}>{p.title}</div>
-                                                            <div className="text-[10px] text-gray-500 truncate">{p.category}</div>
-                                                        </div>
-                                                        {editingProjectId === p.id && <ChevronRight size={14} className="text-blue-500" />}
+                                                        <ChevronRight size={14} className="ml-auto text-gray-500 opacity-0 group-hover:opacity-100 transition" />
                                                     </button>
                                                 ))}
                                             </div>
                                         </div>
-                                    )
+                                    );
                                 })}
                             </div>
                         </div>
