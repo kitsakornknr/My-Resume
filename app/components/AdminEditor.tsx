@@ -1,12 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { updateProfile, addSkill, deleteSkill, updateSkill, addProject, deleteProject, updateProject } from '@/app/actions';
+import { updateProfile, addSkill, deleteSkill, updateSkill, addProject, deleteProject, updateProject, markMessageRead, deleteMessage } from '@/app/actions';
 import { createClient } from '@supabase/supabase-js';
 import {
     Save, Home, Loader2, Plus, Trash2, Code2, Layers, User, Briefcase,
     Mail, Phone, Github, Linkedin, Globe, Tag, Image as ImageIcon, UploadCloud, X, Pencil,
-    ChevronRight, Search
+    ChevronRight, Search, Inbox, MailOpen, Clock
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -67,13 +67,38 @@ const FormSelect = ({ label, value, onChange, options }: any) => (
     </div>
 );
 
-export default function AdminEditor({ initialData }: { initialData: any }) {
+export default function AdminEditor({ initialData, initialMessages = [] }: { initialData: any, initialMessages?: any[] }) {
     const router = useRouter();
     const [activeTab, setActiveTab] = useState('projects');
 
     const [profile, setProfile] = useState(initialData?.profile || {});
     const [skills, setSkills] = useState(initialData?.skills || []);
     const [projects, setProjects] = useState(initialData?.projects || []);
+    const [messages, setMessages] = useState<any[]>(initialMessages || []);
+
+    const unreadCount = messages.filter((m: any) => !m.isRead).length;
+
+    const handleToggleRead = async (msg: any) => {
+        const next = !msg.isRead;
+        setMessages((prev) => prev.map((m) => (m.id === msg.id ? { ...m, isRead: next } : m)));
+        await markMessageRead(msg.id, next);
+    };
+
+    const handleDeleteMessage = async (id: string) => {
+        if (!confirm('ลบข้อความนี้?')) return;
+        setMessages((prev) => prev.filter((m) => m.id !== id));
+        await deleteMessage(id);
+    };
+
+    const formatDate = (d: any) => {
+        try {
+            return new Date(d).toLocaleString('th-TH', {
+                day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+            });
+        } catch {
+            return '';
+        }
+    };
 
     const [isSaving, setIsSaving] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
@@ -217,7 +242,7 @@ export default function AdminEditor({ initialData }: { initialData: any }) {
         }
     ];
 
-    const menuItems = [{ id: 'profile', label: 'User Profile', icon: User }, { id: 'skills', label: 'Skills & Tech', icon: Code2 }, { id: 'projects', label: 'Projects', icon: Layers }];
+    const menuItems = [{ id: 'profile', label: 'User Profile', icon: User }, { id: 'skills', label: 'Skills & Tech', icon: Code2 }, { id: 'projects', label: 'Projects', icon: Layers }, { id: 'messages', label: 'Messages', icon: Inbox }];
 
     return (
         <div className="flex min-h-screen bg-black text-white font-sans selection:bg-blue-500/30 overflow-hidden">
@@ -233,7 +258,10 @@ export default function AdminEditor({ initialData }: { initialData: any }) {
                     <div className="text-xs font-bold text-gray-500 uppercase px-3 mb-2 tracking-wider">Menu</div>
                     {menuItems.map((item) => (
                         <button key={item.id} onClick={() => setActiveTab(item.id)} className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === item.id ? 'bg-blue-600/10 text-blue-400 border border-blue-600/20' : 'text-gray-400 hover:bg-white/5'}`}>
-                            <item.icon size={18} /> {item.label}
+                            <item.icon size={18} /> <span className="flex-1 text-left">{item.label}</span>
+                            {item.id === 'messages' && unreadCount > 0 && (
+                                <span className="ml-auto bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{unreadCount}</span>
+                            )}
                         </button>
                     ))}
                 </nav>
@@ -441,6 +469,55 @@ export default function AdminEditor({ initialData }: { initialData: any }) {
                                             );
                                         })}
                                     </div>
+                                </div>
+                            )}
+
+                            {activeTab === 'messages' && (
+                                <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-3xl">
+                                    {messages.length === 0 ? (
+                                        <div className="bg-[#101010] border border-gray-800 rounded-2xl p-12 flex flex-col items-center text-center gap-3 text-gray-500">
+                                            <Inbox size={40} />
+                                            <p className="font-medium">ยังไม่มีข้อความ</p>
+                                            <p className="text-sm">ข้อความจากฟอร์มติดต่อหน้าเว็บจะมาโผล่ที่นี่</p>
+                                        </div>
+                                    ) : (
+                                        messages.map((m: any) => (
+                                            <div
+                                                key={m.id}
+                                                className={`bg-[#101010] border rounded-2xl p-5 transition-colors ${m.isRead ? 'border-gray-800' : 'border-blue-500/40 bg-blue-600/[0.04]'}`}
+                                            >
+                                                <div className="flex justify-between items-start gap-4 mb-3">
+                                                    <div className="min-w-0">
+                                                        <div className="flex items-center gap-2 flex-wrap">
+                                                            {!m.isRead && <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />}
+                                                            <span className="font-bold text-white truncate">{m.name}</span>
+                                                            <a href={`mailto:${m.email}`} className="text-sm text-blue-400 hover:text-blue-300 truncate">{m.email}</a>
+                                                        </div>
+                                                        <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-1">
+                                                            <Clock size={12} /> {formatDate(m.createdAt)}
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex gap-1 shrink-0">
+                                                        <button
+                                                            onClick={() => handleToggleRead(m)}
+                                                            title={m.isRead ? 'ทำเป็นยังไม่อ่าน' : 'ทำเป็นอ่านแล้ว'}
+                                                            className="text-gray-400 hover:text-blue-400 bg-black/40 p-2 rounded-lg transition"
+                                                        >
+                                                            {m.isRead ? <Mail size={16} /> : <MailOpen size={16} />}
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDeleteMessage(m.id)}
+                                                            title="ลบ"
+                                                            className="text-gray-400 hover:text-red-400 bg-black/40 p-2 rounded-lg transition"
+                                                        >
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <p className="text-gray-300 text-sm whitespace-pre-wrap leading-relaxed border-t border-white/5 pt-3">{m.message}</p>
+                                            </div>
+                                        ))
+                                    )}
                                 </div>
                             )}
                         </div>

@@ -4,6 +4,12 @@ import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import {
+  SESSION_COOKIE,
+  SESSION_MAX_AGE,
+  createSessionToken,
+  verifySessionToken,
+} from '@/lib/auth';
 
 export async function getResumeData() {
   const profile = await prisma.profile.findFirst();
@@ -135,11 +141,13 @@ export async function verifyLogin(formData: FormData) {
     username === process.env.ADMIN_USERNAME && 
     password === process.env.ADMIN_PASSWORD
   ) {
+    const token = await createSessionToken();
     const cookieStore = await cookies();
-    cookieStore.set('admin_session', 'true', { 
-      httpOnly: true, 
+    cookieStore.set(SESSION_COOKIE, token, {
+      httpOnly: true,
+      sameSite: 'lax',
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 60 * 60 * 24 * 7,
+      maxAge: SESSION_MAX_AGE,
       path: '/',
     });
 
@@ -149,8 +157,59 @@ export async function verifyLogin(formData: FormData) {
   return { success: false };
 }
 
+// Server-side guard for admin-only actions. Throws if the session is missing/invalid.
+async function requireAdmin() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(SESSION_COOKIE)?.value;
+  if (!(await verifySessionToken(token))) {
+    throw new Error('Unauthorized');
+  }
+}
+
 export async function logout() {
   const cookieStore = await cookies();
-  cookieStore.delete('admin_session');
+  cookieStore.delete(SESSION_COOKIE);
   redirect('/login');
+}
+
+// ---------- Contact messages ----------
+
+// Public: called from the contact form on the homepage.
+export async function createMessage(formData: { name: string; email: string; message: string }) {
+  const name = (formData.name || '').trim();
+  const email = (formData.email || '').trim();
+  const message = (formData.message || '').trim();
+
+  if (!name || !email || !message) {
+    return { success: false, error: 'กรุณากรอกข้อมูลให้ครบทุกช่อง' };
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return { success: false, error: 'รูปแบบอีเมลไม่ถูกต้อง' };
+  }
+  if (message.length > 5000 || name.length > 200 || email.length > 200) {
+    return { success: false, error: 'ข้อความยาวเกินกำหนด' };
+  }
+
+  await prisma.message.create({ data: { name, email, message } });
+  return { success: true };
+}
+
+// Admin only.
+export async function getMessages() {
+  await requireAdmin();
+  return prisma.message.findMany({ orderBy: { createdAt: 'desc' } });
+}
+
+export async function markMessageRead(id: string, isRead: boolean) {
+  await requireAdmin();
+  await prisma.message.update({ where: { id }, data: { isRead } });
+  revalidatePath('/admin');
+  return { success: true };
+}
+
+export async function deleteMessage(id: string) {
+  await requireAdmin();
+  await prisma.message.delete({ where: { id } });
+  revalidatePath('/admin');
+  return { success: true };
 }

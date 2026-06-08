@@ -2,6 +2,7 @@
 import { Github, Linkedin, Mail, Phone, ArrowUpRight, MessageSquare } from 'lucide-react';
 import { FadeUp } from './Motion';
 import { Profile } from '@prisma/client';
+import ContactForm from './ContactForm';
 
 export default function Contact({ profile }: { profile: Profile }) {
 
@@ -40,6 +41,8 @@ export default function Contact({ profile }: { profile: Profile }) {
 
             <FadeUp delay={0.2}>
                 <div className="flex flex-col gap-6">
+                    <ContactForm />
+
                     <a href={`mailto:${profile.email}`} className="group block bg-white/5 border border-white/10 rounded-3xl p-8 hover:bg-blue-600/10 hover:border-blue-500/30 transition-all cursor-pointer relative overflow-hidden">
                         <div className="absolute top-0 right-0 p-4 opacity-50 group-hover:text-blue-400 transition-colors">
                             <ArrowUpRight size={24} />
